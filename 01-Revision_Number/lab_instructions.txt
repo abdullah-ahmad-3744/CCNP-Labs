@@ -95,9 +95,8 @@ Proceed with reload? [confirm]
 Step 9: Verify the Switch Is Zero Meter
 After reboot:
 Switch> enable
-Switch# show running-config
-Switch# show vlan brief
-Both running-config and VLAN database are empty.
+Switch# show vtp status
+Configuration Revision should be 0 , Number of existing vlans 5, domain name should be null
 Your switch is now brand new (zero meter)  just like it came from the factory.
 
 
