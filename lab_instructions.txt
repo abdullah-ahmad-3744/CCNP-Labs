@@ -1,0 +1,108 @@
+CCNP Switching Lab 1 : Making a Switch New or Zero Meter
+
+##  Lab Objective
+The objective of this lab is to understand how to "reset a Cisco switch to its default state by erasing all configuration files from RAM and Flash. You will first observe the switch’s configuration, make and identify VLAN and non-VLAN changes, and then completely reset the switch to make it “zero meter.”
+
+Devices Required
+- 1 Cisco Switch (e.g., 2960 or 3560)
+- 1 PC (optional – for console access)
+- Console Cable (PC → Switch Console Port)
+
+##  Step-by-Step Instructions
+
+### Step 1: Access the Switch
+1. Open Cisco Packet Tracer.
+2. Drag and drop one switch (e.g., 2960) into the workspace.
+3. Click the Switch → CLI tab.
+4. Press Enter to start the CLI session.
+
+
+### Step 2: Check the Current Configuration
+Before making any changes, check what configuration the switch already has.
+Switch> enable
+Switch# show running-config
+🔹 This shows all active (running) configurations in the switch’s RAM.
+🔹 Also, check VLAN information stored separately in Flash memory:
+Switch# show vlan brief
+At this point, the switch is new from Packet Tracer, but we’ll modify it to understand what happens when configurations change.
+
+
+
+Step 3: Make Basic Configurations
+Now, let’s make some simple changes (non-VLAN-related).
+Switch# configure terminal
+Switch(config)# hostname SW1
+SW1(config)# enable password cisco
+SW1(config)# line console 0
+SW1(config-line)# password CCNP
+SW1(config-line)# login
+SW1(config-line)# exit
+You just changed non-VLAN-related configurations (hostname, passwords).
+Check again:
+SW1# show running-config
+
+
+
+
+Step 4: Identify VLAN and Non-VLAN Configurations
+Now let’s create a VLAN and see how it’s stored separately.
+SW1# configure terminal
+SW1(config)# vlan 10
+SW1(config-vlan)# name Sales
+SW1(config-vlan)# exit
+SW1(config)# exit
+Now verify:
+SW1# show vlan brief
+VLAN 10 appears here.
+VLAN configurations are stored in a separate file (vlan.dat) in Flash memory, not in the running configuration.
+
+
+
+Step 5: Save the Configuration
+Save your configuration to NVRAM so it remains after reboot.
+SW1# copy running-config startup-config
+
+
+
+
+Step 6: Erase Non-VLAN Configurations (from NVRAM)
+Now, let’s erase the non-VLAN configurations.
+SW1# write erase
+or
+SW1# erase startup-config
+Press Enter to confirm.
+This command deletes the startup configuration from NVRAM, but VLANs still exist in Flash (vlan.dat).
+
+
+
+Step 7: Delete VLAN Database (from Flash)
+To remove VLAN-related configurations, delete the VLAN database file.
+SW1# delete flash:vlan.dat
+Press Enter to confirm. Now VLANs are also erased.
+
+
+
+Step 8: Reload the Switch
+To apply the complete reset:
+SW1# reload
+When asked to save changes, type: no
+System configuration has been modified. Save? [yes/no]: no
+Confirm reload:
+Proceed with reload? [confirm]
+
+
+
+Step 9: Verify the Switch Is Zero Meter
+After reboot:
+Switch> enable
+Switch# show running-config
+Switch# show vlan brief
+Both running-config and VLAN database are empty.
+Your switch is now brand new (zero meter)  just like it came from the factory.
+
+
+Key Takeaways
+The running-config is stored in RAM and is temporary. The startup-config is stored in NVRAM and loads on boot. VLAN information is stored in Flash memory (vlan.dat file).To make a switch “new” or “zero meter,” erase both startup-config and vlan.dat, then reload.
+
+Final Note
+This lab helps beginners clearly understand how Cisco switches store and manage configurations. Always save your work before erasing, and remember that VLANs require manual deletion from Flash to fully reset a switch.
