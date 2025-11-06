@@ -1,0 +1,142 @@
+CCNP Switching Lab 2: Understanding VTP Revision Number Changes
+
+
+Lab Objective
+The objective of this lab is to observe how the VTP (VLAN Trunking Protocol) revision number changes in different scenarios such as creating, deleting, and modifying VLANs, or changing VTP modes and domain names.
+By the end of this lab, you will understand how switches track VLAN updates through the revision number.
+
+
+
+Devices Required
+1 Cisco Switch (e.g., 2960 or 3560)
+1 PC (optional – for console access)
+Console Cable (PC → Switch Console Port)
+
+
+
+Step-by-Step Instructions
+Step 1: Check Initial VTP Status
+Open Cisco Packet Tracer and drag one switch (e.g., 2960) into the workspace.
+Access the CLI tab and press Enter.
+Enter privileged EXEC mode:
+Switch> enable
+Switch# show vtp status
+
+Verify the following:
+Configuration Revision = 0
+Number of Existing VLANs = 5
+VTP Domain Name = Null
+VTP Mode = Server
+🔹 If any value is different, make the switch “zero meter” (see previous lab) to reset it.
+
+
+
+
+Step 2: Check Existing VLANs and Revision Number
+View the current VLANs:
+Switch# show vlan brief
+Check the revision number again:
+Switch# show vtp status
+🔹 Revision number should still be 0.
+
+
+
+Step 3: Create a New VLAN and Observe the Change
+Create VLAN 2:
+Switch(config)# vlan 2
+Check the revision number again:
+Switch# show vtp status
+🔹 The revision number increases from 0 → 1 and the number of VLANs increases from 5 → 6.
+
+
+
+
+Step 4: Create Multiple VLANs at Once
+Create VLANs 3 to 5:
+Switch(config)# vlan 3-5
+Verify the new revision number:
+Switch# show vtp status
+🔹 The revision number increases again because new VLANs were added.
+
+
+
+Step 5: Create an Existing VLAN
+Try to recreate an existing VLAN (e.g., VLAN 2):
+Switch(config)# vlan 2
+Check the revision number:
+Switch# show vtp status
+🔹 The revision number does not change because no new VLAN was actually added.
+
+
+
+
+Step 6: Delete an Existing VLAN
+Delete VLAN 5:
+Switch(config)# no vlan 5
+Check the revision number:
+Switch# show vtp status
+🔹 The revision number increases because a VLAN was deleted, changing the VLAN database.
+
+
+
+
+Step 7: Nested VLAN Creation
+Create VLAN 6 and within that mode create VLAN 10:
+Switch(config)# vlan 6
+Switch(config-vlan)# vlan 10
+Switch(config-vlan)# do show vtp status
+Exit VLAN mode and check again:
+Switch# show vtp status
+🔹 The revision number increases again since new VLANs were added.
+
+
+
+
+Step 8: Change VTP Mode to Client
+Change the mode:
+Switch(config)# vtp mode client
+Check the status:
+Switch# show vtp status
+🔹 Revision number may reset or stop changing because the client mode switch no longer updates VLANs manually.
+
+
+
+
+Step 9: Change VTP Mode to Transparent
+Switch to transparent mode:
+Switch(config)# vtp mode transparent
+Verify status:
+Switch# show vtp status
+Create a new VLAN:
+Switch(config)# vlan 20
+Switch# show vtp status
+🔹 In Transparent mode, VLANs are stored locally — revision number does not change.
+Change back to Server mode:
+Switch(config)# vtp mode server
+Switch# show vtp status
+🔹 Revision number now resumes tracking changes.
+
+
+
+
+Step 10: Change the VTP Domain Name
+Assign a domain name:
+Switch(config)# vtp domain Cisco
+Switch# show vtp status
+🔹 Revision number resets to 0 when the domain name changes.
+Change the domain name again:
+Switch(config)# vtp domain CCNP
+Switch# show vtp status
+🔹 Revision number resets again to 0 because a new domain name creates a new VTP instance.
+
+
+
+
+Key Takeaways
+VTP Revision Number increases every time a VLAN is created, modified, or deleted in Server mode.Recreating an existing VLAN does not change the revision number.Transparent mode stores VLANs locally; the revision number remains static. Changing the VTP domain name resets the revision number to 0. Client mode does not allow manual VLAN creation and hence does not change the revision number.
+
+
+
+Final Note
+This lab helps you understand how VTP synchronization works among Cisco switches.
+Always keep track of the revision number, as a higher revision number can overwrite VLAN information on other switches in the same domain. Understanding these changes is crucial for managing VLANs in large networks.
