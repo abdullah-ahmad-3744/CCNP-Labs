@@ -140,3 +140,7 @@ VTP Revision Number increases every time a VLAN is created, modified, or deleted
 Final Note
 This lab helps you understand how VTP synchronization works among Cisco switches.
 Always keep track of the revision number, as a higher revision number can overwrite VLAN information on other switches in the same domain. Understanding these changes is crucial for managing VLANs in large networks.
+
+
+
+==============================Lab  completed====================================================
