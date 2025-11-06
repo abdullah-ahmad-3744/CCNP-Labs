@@ -123,7 +123,7 @@ Step 10: Change the VTP Domain Name
 Assign a domain name:
 Switch(config)# vtp domain Cisco
 Switch# show vtp status
-🔹 Revision number resets to 0 when the domain name changes.
+🔹 Revision number remains same when the domain name first time configured.
 Change the domain name again:
 Switch(config)# vtp domain CCNP
 Switch# show vtp status
