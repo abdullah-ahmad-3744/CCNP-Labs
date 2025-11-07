@@ -100,3 +100,6 @@ This lab demonstrates how trunk ports work and how switchport modes determine li
 Understanding trunking is essential for VLAN communication between switches in enterprise networks. Always verify trunk status using:
 show interfaces trunk
 and ensure your VTP domain names match for proper VLAN propagation.
+
+
+=============================Lab Completed================================================
