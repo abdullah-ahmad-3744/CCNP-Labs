@@ -1,0 +1,102 @@
+CCNP Switching Lab 3: Configuring and Understanding Trunk Ports
+
+
+Lab Objective
+The objective of this lab is to understand how to configure trunk ports between switches and verify their operation. You will learn how to connect two Cisco switches, configure VTP domains, set trunk modes, and observe how the trunk link forms and changes based on port configuration.
+
+Devices Required
+2 Cisco Switches (e.g., 3560)
+1 PC (optional – for console access)
+Console Cables (PC → Switch Console Ports)
+1 Ethernet Cable (to connect both switches)
+
+
+
+
+Step-by-Step Instructions
+Step 1: Introduction
+In this lab, you will configure trunk ports between two switches and observe how different switchport modes affect the formation of a trunk link. A trunk link allows multiple VLANs to be transmitted across a single physical link between switches.
+
+
+
+Step 2: Create the Topology
+Open Cisco Packet Tracer. Drag and drop two Cisco 3560 switches into the workspace.
+Connect both switches using a FastEthernet (or GigabitEthernet) cable.
+Example: Connect FastEthernet 0/1 of SW-A to FastEthernet 0/1 of SW-B.
+
+
+
+
+Step 3: Configure Hostnames and VTP Domains
+Access SW-A and enter the following commands:
+Switch> enable
+Switch# configure terminal
+Switch(config)# hostname SW-A
+SW-A(config)# vtp domain Cisco
+SW-A(config)# end
+SW-A# show vtp status
+
+Access SW-B and configure it similarly:
+Switch> enable
+Switch# configure terminal
+Switch(config)# hostname SW-B
+SW-B(config)# vtp domain Cisco
+SW-B(config)# end
+SW-B# show vtp status
+🔹 Make sure both switches have the same VTP domain name (“Cisco”).
+🔹 Having the same domain name is essential for trunking and VLAN synchronization.
+
+
+
+
+Step 4: Verify Trunk Status
+Before making any configuration, check whether any trunk link already exists.
+SW-A# show interfaces trunk
+SW-B# show interfaces trunk
+🔹 If no trunk ports appear, it means the interfaces are still operating in access mode.
+
+
+
+
+
+Step 5: Configure the Trunk Port
+Now, you will manually configure trunking between both switches.
+On SW-A, enter:
+SW-A# configure terminal
+SW-A(config)# interface fastEthernet 0/1
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# end
+SW-A# show interfaces trunk
+🔹 This command forces the interface into trunk mode.
+On SW-B, configure the port as dynamic desirable:
+
+SW-B# configure terminal
+SW-B(config)# interface fastEthernet 0/1
+SW-B(config-if)# switchport mode dynamic desirable
+SW-B(config-if)# end
+SW-B# show interfaces trunk
+🔹 The “dynamic desirable” mode actively attempts to form a trunk if the connected device is also capable.
+Verify the trunk formation:
+SW-A# show interfaces trunk
+SW-B# show interfaces trunk
+🔹 You should now see Fa0/1 listed as a trunk port on both switches.
+
+
+
+
+Key Takeaways :
+A trunk port allows traffic from multiple VLANs to pass between switches using VLAN tagging (802.1Q).
+Trunk formation depends on the switchport mode configuration on both sides:
+Dynamic Desirable ↔ Dynamic Desirable = Trunk forms automatically
+Trunk ↔ Dynamic Desirable = Trunk forms
+Access ↔ Access = No trunk
+Both switches must share the same VTP domain for VLAN information to synchronize.
+
+
+
+
+Final Note
+This lab demonstrates how trunk ports work and how switchport modes determine link behavior.
+Understanding trunking is essential for VLAN communication between switches in enterprise networks. Always verify trunk status using:
+show interfaces trunk
+and ensure your VTP domain names match for proper VLAN propagation.
