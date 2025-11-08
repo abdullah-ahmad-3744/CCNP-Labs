@@ -151,3 +151,8 @@ Encapsulation dot1q is the modern standard for trunking, replacing older ISL.
 Final Note
 This lab helps you clearly understand both dynamic and static trunk formation between multiple Cisco switches. By experimenting with different mode combinations, you can predict how trunking behaves and configure it manually when automatic negotiation is not preferred.
 Understanding trunk operations is essential for building scalable, VLAN-based switched networks.
+
+
+
+
+===================================Lab Completed=======================================
