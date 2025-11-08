@@ -58,7 +58,7 @@ Verify trunk formation:
 SW-A# show interfaces trunk
 🔹 The trunk forms automatically.
 🔹 You will observe parameters such as:
-Mode: auto
+Mode: Desirable
 Encapsulation: ISL / 802.1Q (negotiated automatically)
 
 
