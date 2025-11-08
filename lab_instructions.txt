@@ -1,0 +1,153 @@
+CCNP Switching Lab 4: Configuring Static and Dynamic Trunks
+
+
+Lab Objective
+The objective of this lab is to understand how to configure and verify trunk links between multiple switches using Dynamic Trunking Protocol (DTP) and static trunk configuration. You will observe how different switchport modes affect trunk formation and learn how to manually configure a static trunk using encapsulation methods.
+
+
+Devices Required
+3 Cisco Switches (e.g., 3560)
+1 PC (optional – for console access)
+Console Cables (PC → Switch Console Ports)
+Ethernet Cables to connect switches (Fa0/1 and Fa0/2 interfaces)
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Cisco Packet Tracer.
+Drag and drop three Cisco 3560 switches labeled as:
+SW-A
+SW-B
+SW-C
+Connect the switches using FastEthernet 0/1 interfaces:
+SW-A Fa0/1 → SW-B Fa0/1
+SW-B Fa0/2 → SW-C Fa0/1
+SW-A, SW-B, and SW-C are now interconnected.
+
+
+Step 2: Understand Trunk Requirements
+Trunk ports allow multiple VLANs to communicate between switches.
+The formation of a trunk link depends on the DTP negotiation modes at both ends.
+Scenario	                            Result
+Dynamic Desirable ↔ Dynamic Desirable	✅ Trunk forms automatically
+Dynamic Auto ↔ Dynamic Desirable	    ✅ Trunk forms automatically
+Dynamic Desirable ↔ Dynamic Auto	    ✅ Trunk forms automatically
+Dynamic Auto ↔ Dynamic Auto	            ❌ No trunk formed
+🔹 A trunk forms only when at least one side is Dynamic Desirable.
+🔹 If both sides are Dynamic Auto, the link remains in access mode.
+
+
+Step 3: Verify Current Trunk Status
+On all switches (SW-A, SW-B, SW-C), check trunk status:
+Switch# show interfaces trunk
+If no trunk appears, adjust the switchport modes according to the required combinations.
+After setting modes, verify again:
+Switch# show interfaces trunk
+Observe parameters like:
+Mode (Auto or Desirable)
+Encapsulation (ISL or 802.1Q)
+Learning Method (with or without “n” for negotiation)
+
+
+Step 4: Create Dynamic Trunk (Auto ↔ Desirable)
+On one switch, change the port mode to Dynamic Desirable:
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport mode dynamic desirable
+On the other connected switch, leave the port as Dynamic Auto.
+Verify trunk formation:
+SW-A# show interfaces trunk
+🔹 The trunk forms automatically.
+🔹 You will observe parameters such as:
+Mode: auto
+Encapsulation: ISL / 802.1Q (negotiated automatically)
+
+
+Step:5 Verify the trunk on SW-B
+SW-B # show interface trunk 
+check the trunk and its parameters 
+Mode (auto)
+Encapsulation : (n-802.1q)
+
+
+Step 6: Configure Static Trunk on SW-A
+On SW-A, manually configure a static trunk:
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+SW-A(config-if)# end
+Verify the trunk configuration:
+SW-A# show interfaces trunk
+🔹 Parameters should show:
+Mode: on
+Encapsulation: 802.1Q
+Learning Method: without “n” (indicating no DTP negotiation)
+
+
+Step 7: Verify Trunk Parameters on SW-A
+Use the command:
+SW-A# show interfaces trunk
+Observe:
+Mode: on (Static)
+Encapsulation: 802.1Q
+Negotiation: none (n–802.1Q indicates negotiated; without “n” means static)
+
+
+Step:8 Verify the Trunk and and its parameters on SW-B 
+SW-B # show interface trunk 
+Verify the parameters 
+Mode : auto
+Encapsulation : (n-802.1q)
+
+
+Step 9: Configure Static Trunk on SW-B
+On SW-B, configure a static trunk on multiple interfaces:
+SW-B(config)# interface range fa0/1-2
+SW-B(config-if)# switchport trunk encapsulation dot1q
+SW-B(config-if)# switchport mode trunk
+SW-B(config-if)# switchport nonegotiate
+SW-B(config-if)# end
+Verify on both SW-B:
+SW-B# show interfaces trunk
+SW-C# show interfaces trunk
+🔹 You should now see Fa0/1 and Fa0/2 as static trunk ports with:
+Mode: on
+Encapsulation: 802.1Q
+Learning Method: without “n”
+
+
+Step 10: Configure Static Trunk on SW-C
+Verify current trunk status:
+SW-C# show interfaces trunk
+Configure a static trunk on Fa0/2:
+SW-C(config)# interface fa0/2
+SW-C(config-if)# switchport trunk encapsulation dot1q
+SW-C(config-if)# switchport mode trunk
+SW-C(config-if)# switchport nonegotiate
+SW-C(config-if)# end
+Verify the final trunk setup:
+SW-C# show interfaces trunk
+🔹 Confirm parameters like:
+Mode: on
+Encapsulation: 802.1Q
+Trunk established with SW-B
+
+
+Step:11 Verify the Static Trunk on all switches SW-A, SW-B, SW-C 
+SW-A # show interface trunk
+SW-B # show interface trunk
+SW-C # show interface trunk
+
+
+Key Takeaways
+Dynamic Trunking Protocol (DTP) automatically negotiates trunk formation based on the switchport modes.
+Dynamic Desirable actively attempts to form a trunk, while Dynamic Auto waits for negotiation.
+Static trunk (using switchport mode trunk and nonegotiate) disables DTP and forms a trunk manually.
+Always verify trunk parameters using:
+show interfaces trunk
+Encapsulation dot1q is the modern standard for trunking, replacing older ISL.
+
+
+Final Note
+This lab helps you clearly understand both dynamic and static trunk formation between multiple Cisco switches. By experimenting with different mode combinations, you can predict how trunking behaves and configure it manually when automatic negotiation is not preferred.
+Understanding trunk operations is essential for building scalable, VLAN-based switched networks.
