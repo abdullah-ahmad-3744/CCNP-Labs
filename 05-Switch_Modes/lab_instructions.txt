@@ -34,6 +34,9 @@ VTP Mode: Server
 VTP Domain Name: (None or blank)
 Revision Number: 0
 Existing VLANs: 5
+
+
+Step:3 Configure Domain Name
 Set a common VTP domain on all switches:
 SW-A(config)# vtp domain Cisco
 SW-B(config)# vtp domain Cisco
@@ -43,7 +46,7 @@ show vtp status
 Ensure all switches show same domain name (Cisco) and Revision Number = 0.
 
 
-Step 3: Observe VLAN Propagation in Server Mode
+Step 4: Observe VLAN Propagation in Server Mode
 On SW-A, create a new VLAN:
 SW-A(config)# vlan 2
 Check the VTP status on all switches:
@@ -60,7 +63,7 @@ T (Transfer) – transmits updated info to next switch
 So the propagration behavior in Server Mode is RUT.
 
 
-Step 4: Change SW-B Mode to Client
+Step 5: Change SW-B Mode to Client
 Change SW-B from Server to Client mode:
 SW-B(config)# vtp mode client
 Verify configurations on SW-B and SW-C:
@@ -70,7 +73,7 @@ SW-B should now show Mode: Client.
 SW-C remains in Server mode.
 
 
-Step:5 Create a VLAN 3 on SW-A and observe the propagation behavior
+Step:6 Create a VLAN 3 on SW-A and observe the propagation behavior
 SW-A(config)# vlan 3
 Check propagation behavior:
 SW-B# show vtp status
@@ -79,7 +82,7 @@ SW-C# show vtp status
 🔹 SW-C (Server) updates automatically after receiving from SW-B.
 
 
-Step 6: Change SW-B Mode to Transparent
+Step 7: Change SW-B Mode to Transparent
 Change SW-B from Client to Transparent mode:
 SW-B(config)# vtp mode transparent
 Verify configuration:
@@ -91,7 +94,7 @@ SW-A# show vtp status
 Confirm SW-A is still in Server Mode with updated Revision Number.
 
 
-Step 7: Observe Propagation Behavior with Transparent Mode
+Step 8: Observe Propagation Behavior with Transparent Mode
 Create another VLAN on SW-A:
 SW-A(config)# vlan 4
 Verify propagation:
@@ -106,7 +109,7 @@ Transparent mode does not participate in VTP synchronization.
 It forwards VTP advertisements but does not update its VLAN database.
 
 
-Step 7: Summary of Observations
+Step 9: Summary of Observations
 Switch	Mode	Receives VLAN Updates	Forwards Updates	Updates Own Database
 SW-A	Server	       ✅	                   ✅	                  ✅
 SW-B	Client	       ✅	                   ❌	                  ❌
