@@ -1,0 +1,127 @@
+CCNP Switching Lab 5: Understanding and Configuring Switch VTP Modes
+
+
+Lab Objective
+The objective of this lab is to understand the behavior and configuration of different VTP (VLAN Trunking Protocol) modes : Server, Client, and Transparent on Cisco switches. You will observe how VLAN information is propagated across the network and how the Revision Number changes with each configuration update.
+
+
+Devices Required
+3 Cisco Catalyst 3560 Switches
+1 PC (optional, for console access)
+Console Cables (PC → Switch Console Ports)
+Ethernet Cables to interconnect switches
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Cisco Packet Tracer.
+Drag and drop three Cisco 3560 switches and label them as:
+SW-A, SW-B, SW-C
+Connect them using FastEthernet ports:
+SW-A Fa0/1 → SW-B Fa0/1
+SW-B Fa0/2 → SW-C Fa0/1
+Ensure all switches are powered on and connected properly.
+
+
+Step 2: Configure Initial VTP Settings
+By default, all switches operate in Server Mode.
+Verify their VTP status using:
+SW-A# show vtp status
+SW-B# show vtp status
+SW-C# show vtp status
+Observe the default configuration values:
+VTP Mode: Server
+VTP Domain Name: (None or blank)
+Revision Number: 0
+Existing VLANs: 5
+Set a common VTP domain on all switches:
+SW-A(config)# vtp domain Cisco
+SW-B(config)# vtp domain Cisco
+SW-C(config)# vtp domain Cisco
+Recheck using:
+show vtp status
+Ensure all switches show same domain name (Cisco) and Revision Number = 0.
+
+
+Step 3: Observe VLAN Propagation in Server Mode
+On SW-A, create a new VLAN:
+SW-A(config)# vlan 2
+Check the VTP status on all switches:
+SW-A# show vtp status
+SW-B# show vtp status
+SW-C# show vtp status
+Observe the Revision Number and Existing VLANs:
+SW-A updates its VLAN database.
+SW-B and SW-C receive the new VLAN through propagation (RUT behavior):
+R (Receive) – receives new configuration
+U (Update) – updates local VLAN database
+T (Transfer) – transmits updated info to next switch
+*Note : How the Revision Number increases and synchronizes across all switches.
+So the propagration behavior in Server Mode is RUT.
+
+
+Step 4: Change SW-B Mode to Client
+Change SW-B from Server to Client mode:
+SW-B(config)# vtp mode client
+Verify configurations on SW-B and SW-C:
+SW-B# show vtp status
+SW-C# show vtp status
+SW-B should now show Mode: Client.
+SW-C remains in Server mode.
+
+
+Step:5 Create a VLAN 3 on SW-A and observe the propagation behavior
+SW-A(config)# vlan 3
+Check propagation behavior:
+SW-B# show vtp status
+SW-C# show vtp status
+🔹 SW-B (Client) receives VLAN 3 configuration from SW-A.
+🔹 SW-C (Server) updates automatically after receiving from SW-B.
+
+
+Step 6: Change SW-B Mode to Transparent
+Change SW-B from Client to Transparent mode:
+SW-B(config)# vtp mode transparent
+Verify configuration:
+SW-B# show vtp status
+SW-B should show Mode: Transparent.
+Revision Number on SW-B will no longer change with updates from other switches.
+Check VTP status again on SW-A:
+SW-A# show vtp status
+Confirm SW-A is still in Server Mode with updated Revision Number.
+
+
+Step 7: Observe Propagation Behavior with Transparent Mode
+Create another VLAN on SW-A:
+SW-A(config)# vlan 4
+Verify propagation:
+On SW-B (Transparent):
+SW-B# show vtp status
+Observe that SW-B does not update its VLAN database from SW-A.
+On SW-C (Server):
+SW-C# show vtp status
+Confirm whether the new VLAN (4) is received or not.
+Observation:
+Transparent mode does not participate in VTP synchronization.
+It forwards VTP advertisements but does not update its VLAN database.
+
+
+Step 7: Summary of Observations
+Switch	Mode	Receives VLAN Updates	Forwards Updates	Updates Own Database
+SW-A	Server	       ✅	                   ✅	                  ✅
+SW-B	Client	       ✅	                   ❌	                  ❌
+SW-B	Transparent	   ❌	                   ✅	                  ❌
+SW-C	Server	       ✅	                   ✅	                  ✅
+
+
+
+Key Takeaways
+VTP Server Mode: Can create, modify, and propagate VLAN information to other switches in the same domain.
+VTP Client Mode: Cannot create or modify VLANs; only receives updates from the server.
+VTP Transparent Mode: Forwards VTP advertisements but does not synchronize VLANs with other switches.
+Revision Number increases whenever a configuration change occurs on a VTP Server.
+VLAN propagation works only among switches with the same VTP domain name and matching passwords (if configured).
+
+
+Final Note
+This lab demonstrates how different VTP modes affect VLAN propagation across switches. By changing switch modes and observing propagation behavior, you gain a deeper understanding of how VLANs are managed and distributed in a multi-switch network — an essential skill for CCNP-level switching configurations.
