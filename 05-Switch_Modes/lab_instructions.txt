@@ -128,3 +128,8 @@ VLAN propagation works only among switches with the same VTP domain name and mat
 
 Final Note
 This lab demonstrates how different VTP modes affect VLAN propagation across switches. By changing switch modes and observing propagation behavior, you gain a deeper understanding of how VLANs are managed and distributed in a multi-switch network — an essential skill for CCNP-level switching configurations.
+
+
+
+
+===========================================Lab Completed==================================================
