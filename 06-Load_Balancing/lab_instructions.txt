@@ -187,3 +187,5 @@ Load Balancing distributes VLAN traffic across multiple trunk links.Spanning Tre
 
 Final Note
 This lab demonstrates how VLAN-based load balancing works with static trunks and Spanning Tree Protocol. By assigning VLANs to different ports and observing their forwarding states, you can effectively optimize traffic distribution and redundancy across switches — a key concept in CCNP-level switching design.
+
+====================================Lab Completed ========================================
