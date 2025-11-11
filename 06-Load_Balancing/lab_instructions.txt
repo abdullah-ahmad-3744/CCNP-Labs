@@ -1,0 +1,189 @@
+CCNP Switching Lab 6: Load Balancing Lab
+
+
+
+Lab Objective
+The objective of this lab is to understand VLAN Load Balancing using trunk links between multiple Cisco switches. You will learn how VLANs are allowed on specific trunk ports, observe Spanning Tree Protocol (STP) behavior, and see how VLAN traffic is distributed across multiple links to achieve load balancing.
+
+
+
+
+Devices Required
+3 Switches (SW-A, SW-B, SW-C)
+1 PC (optional – for console access)
+Console Cables (PC → Switch Console Ports)
+Ethernet Cables to interconnect switches (Fa0/1, Fa0/2, Fa0/3, Fa0/4)
+
+
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Cisco Packet Tracer.
+Drag and drop three Cisco 3560 switches labeled as:
+SW-A
+SW-B
+SW-C
+
+Connect the switches using the following FastEthernet ports:
+SW-A Fa0/1 → SW-B Fa0/1
+SW-A Fa0/2 → SW-B Fa0/2
+SW-A Fa0/3 → SW-B Fa0/3
+SW-A Fa0/4 → SW-B Fa0/4
+
+
+
+
+Step 2: Prepare the Switches
+Before starting, make sure:
+All switches are zero meter (reset to default).
+Static trunks are configured on interconnecting ports.
+A common VTP domain name is set on all switches.
+
+
+
+
+Step 3: Configure Zero Meter, Domain Name, and Static Trunks
+Perform these configurations on all switches (SW-A, SW-B, and SW-C):
+Reset switches to default (zero meter).
+Configure the VTP domain name:
+Switch(config)# vtp domain Cisco
+Configure static trunks on all interconnecting interfaces:
+Switch(config)#    interface range fa0/1 - 4
+Switch(config-if)# switchport trunk encapsulation dot1q
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# switchport nonegotiate
+
+
+
+Step 4: Verify Static Trunk Configuration
+Check trunk parameters on both switches:
+SW-A# show interfaces trunk
+SW-B# show interfaces trunk
+Verify:
+Mode: on
+Encapsulation: 802.1Q
+Vlans allowed: All by default (1–4094)
+
+
+
+Step 5: Create VLANs on SW-A
+On SW-A, create VLANs for load balancing:
+SW-A(config)# vlan 2-4
+Verify trunk and VLAN information:
+SW-A# show interfaces trunk
+Check:
+Number of VLANs allowed on trunk
+VLANs currently active and forwarding
+Spanning Tree forwarding states
+
+
+
+
+Step 6: Check VLAN Forwarding States
+On SW-A, check the Spanning Tree configuration to see which VLANs are in the forwarding or blocking state:
+SW-A# show spanning-tree
+Observe:
+Ports in Forwarding or Blocking states.
+VLANs actively using each trunk link.
+Links pruned or not used for specific VLANs.
+Note: Run this on a non-root switch, as root ports are always in forwarding state.
+
+
+
+
+Step 7: Configure VLAN-Based Load Balancing on SW-A
+Assign VLANs to separate trunk ports to distribute traffic:
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk allowed vlan 2
+SW-A(config)# interface fa0/2
+SW-A(config-if)# switchport trunk allowed vlan 3
+SW-A(config)# interface fa0/3
+SW-A(config-if)# switchport trunk allowed vlan 4
+SW-A(config)# interface fa0/4
+SW-A(config-if)# switchport trunk allowed vlan 2-4
+This configuration ensures:
+VLAN 2 uses Fa0/1
+VLAN 3 uses Fa0/2
+VLAN 4 uses Fa0/3
+All VLANs (2–4) are allowed on Fa0/4 as a backup path.
+
+
+
+
+Step 8: Verify Load Balancing on SW-A
+Check allowed VLANs and spanning-tree forwarding state:
+SW-A# show interfaces trunk
+Expected Output:
+Interface	VLANs Allowed	VLANs in Forwarding State
+Fa0/1	         2	               2
+Fa0/2	         3	               3
+Fa0/3	         4	               4
+Fa0/4	         2-4	           2-4
+VLAN traffic is now distributed across multiple links.
+
+
+
+
+Step 9: Configure VLAN Load Balancing on SW-B
+Repeat the same VLAN-port assignments on SW-B:
+SW-B(config)# interface fa0/1
+SW-B(config-if)# switchport trunk allowed vlan 2
+SW-B(config)# interface fa0/2
+SW-B(config-if)# switchport trunk allowed vlan 3
+SW-B(config)# interface fa0/3
+SW-B(config-if)# switchport trunk allowed vlan 4
+SW-B(config)# interface fa0/4
+SW-B(config-if)# switchport trunk allowed vlan 2-4
+Step 10: Verify Load Balancing on SW-B
+Use the following command:
+SW-B# show interfaces trunk
+Expected Output:
+Interface	VLANs Allowed	VLANs in Forwarding State
+Fa0/1	          2	             2
+Fa0/2	          3	             3
+Fa0/3	          4	             4
+Fa0/4	          2-4	         2-4
+This confirms load balancing across multiple links for VLANs 2, 3, and 4.
+
+
+
+
+Step 11: Simulate Link Failure for VLAN 2
+Shut down the VLAN 2 link on SW-B:
+SW-B(config)# interface fa0/1
+SW-B(config-if)# shutdown
+
+
+
+
+Observe VLAN 2 traffic behavior:
+VLAN 2 moves automatically to another available link (e.g., Fa0/4).
+Check VLAN 2 routing with:
+SW-B# show interfaces trunk
+Note VLAN 2’s new active path(Fa0/4)
+
+
+
+Step 12: Restore VLAN 2 Link
+Bring Fa0/1 back up:
+SW-B(config)# interface fa0/1
+SW-B(config-if)# no shutdown
+Verify that Fa0/1 is now forwarding VLAN 2 traffic again and Fa0/4 is blocked for VLAN 2 (to prevent loop)
+SW-B# show interfaces trunk
+Expected Output:
+Interface	VLANs Allowed	VLANs in Forwarding State
+Fa0/1	        2	               2
+Fa0/2	        3	               3
+Fa0/3	        4	               4
+Fa0/4	        2-4	               2-4 (VLAN 2 now blocked)
+
+
+
+Key Takeaways
+Load Balancing distributes VLAN traffic across multiple trunk links.Spanning Tree Protocol (STP) ensures loop-free topology by blocking redundant links. When a primary link fails, STP unblocks a backup trunk for that VLAN. The switchport trunk allowed vlan command defines which VLANs can pass through specific links. Regularly use show interfaces trunk and show spanning-tree to verify VLAN paths and forwarding states.
+
+
+
+Final Note
+This lab demonstrates how VLAN-based load balancing works with static trunks and Spanning Tree Protocol. By assigning VLANs to different ports and observing their forwarding states, you can effectively optimize traffic distribution and redundancy across switches — a key concept in CCNP-level switching design.
