@@ -1,0 +1,131 @@
+CCNP Switching Lab 7: Understanding and Configuring Native VLANs
+
+
+
+Lab Objective
+The objective of this lab is to understand the concept of Native VLANs on trunk ports and how VLAN mismatches can affect network connectivity. You will learn to configure, verify, and troubleshoot Native VLAN configurations between two Cisco switches and observe the behavior when mismatched VLANs cause port blocking due to PVID inconsistencies.
+
+
+
+
+Devices Required
+2 Cisco Catalyst 3560 Switches (SW-A and SW-B)
+1 PC (optional – for console access)
+Console Cables (PC → Switch Console Ports)
+Ethernet Cable (to interconnect switches using Fa0/1)
+
+
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Cisco Packet Tracer.
+Drag and drop two Cisco 3560 switches and name them:
+SW-A
+SW-B
+Connect them using FastEthernet0/1 → FastEthernet0/1.
+Check default configurations using:
+SW-A# show running-config
+SW-B# show running-config
+Ensure both switches are in their default (zero meter) state.
+
+
+
+
+Step 2: Prepare the Switches
+Before configuring VLANs:
+Ensure both switches are zero meter (factory default).
+Static trunk is configured on Fa0/1.
+Common VTP domain name is configured.
+Example:
+SW-A(config)# vtp domain Cisco
+SW-B(config)# vtp domain Cisco
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+SW-B(config)# interface fa0/1
+SW-B(config-if)# switchport trunk encapsulation dot1q
+SW-B(config-if)# switchport mode trunk
+SW-B(config-if)# switchport nonegotiate
+
+
+
+
+
+Step 3: Create VLANs on Both Switches
+Create VLANs 2–4 on both SW-A and SW-B:
+SW-A(config)# vlan 2-4
+SW-B(config)# vlan 2-4
+Verify VLAN configurations:
+SW-A# show vlan brief
+SW-B# show vlan brief
+ Confirm VLANs 2, 3, and 4 are created and active.
+
+
+
+
+Step 4: Verify Spanning Tree Configuration
+Check Spanning Tree Protocol (STP) status for all VLANs:
+SW-A# show spanning-tree
+SW-A# show spanning-tree summary
+Observe that STP operates in Per-VLAN Spanning Tree (PVSTP) mode and each VLAN has its own spanning tree instance.
+
+
+
+Step 5: Change the Native VLAN on SW-A
+Modify the Native VLAN on the trunk interface Fa0/1 of SW-A:
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk native vlan 2
+Note:
+This creates a Native VLAN mismatch between SW-A (Native VLAN 2) and SW-B (Native VLAN 1 by default).
+This results in port blocking for VLANs due to PVID inconsistency.
+
+
+
+Step 6: Verify Native VLAN Blocking
+Check trunk details on both switches:
+SW-A# show interfaces trunk
+SW-B# show interfaces trunk
+Verify Native VLAN = 2 on SW-A and Native VLAN = 1 on SW-B.
+Observe ports showing “Port blocking due to VLAN mismatch”.
+Check spanning tree details for blocked ports:
+SW-A# show spanning-tree
+SW-B# show spanning-tree
+You’ll notice:
+BKN* status (Blocked, not due to STP).
+Reason: PVID Inconsistency between switches.
+VLAN 1 and VLAN 2 will be in a blocking state.
+
+
+
+Step 7: Restore Native VLAN Configuration
+To resolve the inconsistency, set both switches to use the same Native VLAN 1:
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk native vlan 1
+Verify the change:
+SW-A# show interfaces trunk
+Confirm that:
+Native VLAN is now 1 on both switches.
+No more blocked ports or PVID inconsistency errors.
+All VLANs (1–4) are in the Spanning Tree Forwarding state.
+
+
+
+Key Takeaways
+Native VLAN is the untagged VLAN on a trunk link (default is VLAN 1).
+A Native VLAN mismatch between trunk ports causes PVID inconsistency and port blocking.
+Always ensure both trunk ends have the same Native VLAN to avoid connectivity issues.
+
+
+Use the following commands to verify configurations:
+show interfaces trunk
+show spanning-tree
+show vlan brief
+
+
+
+
+
+Final Note
+This lab helps you understand how Native VLANs function and how mismatches affect network stability. By observing the blocking and unblocking behavior, you gain practical insight into VLAN trunk consistency and Spanning Tree operations — an essential concept in CCNP Switching.
