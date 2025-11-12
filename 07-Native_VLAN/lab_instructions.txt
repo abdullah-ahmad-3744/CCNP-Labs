@@ -125,7 +125,8 @@ show vlan brief
 
 
 
-
-
 Final Note
 This lab helps you understand how Native VLANs function and how mismatches affect network stability. By observing the blocking and unblocking behavior, you gain practical insight into VLAN trunk consistency and Spanning Tree operations — an essential concept in CCNP Switching.
+
+
+=======================================Lab Completed======================================================
