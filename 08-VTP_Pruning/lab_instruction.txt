@@ -126,3 +126,7 @@ Use the command show interfaces trunk frequently to monitor VLAN pruning behavio
 
 Final Note
 This lab demonstrates dynamic VLAN pruning, an essential concept for optimizing network performance in enterprise environments. Understanding VTP pruning helps prevent unnecessary broadcast traffic and improves trunk efficiency — a vital skill for CCNP-level switching.
+
+
+
+=============================================Lab Completed==============================================
