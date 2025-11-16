@@ -1,0 +1,128 @@
+CCNP Switching Lab 8: Configuring and Verifying VTP Pruning
+
+
+
+Lab Objective
+The objective of this lab is to understand how VTP Pruning works in a multi-switch environment. You will configure VLANs, enable VTP pruning globally, apply pruning on specific trunk ports, and observe how VLAN traffic is dynamically pruned when no active hosts exist for that VLAN on the remote switch.
+
+
+
+Devices Required
+2 Cisco Catalyst 3560 Switches (SW-A, SW-B)
+2 PCs (PC1 and PC2)
+Console Cables
+Ethernet Cables
+PC1 → SW-A (Fa0/2)
+PC2 → SW-B (Fa0/2)
+SW-A ↔ SW-B (Fa0/1 trunk link)
+
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Cisco Packet Tracer.
+Drag and drop two switches and name them:
+SW-A
+SW-B
+Drag and drop two PCs:
+PC1 → Connect to SW-A Fa0/2
+PC2 → Connect to SW-B Fa0/2
+Connect switches using:
+SW-A Fa0/1 → SW-B Fa0/1
+Ensure all devices are powered on.
+
+
+
+
+Step 2: Prepare the Switches
+Before starting, ensure:
+Both switches are zero meter (new / freshly reset).
+Static trunk is configured on Fa0/1 of both switches.
+A VTP domain name is configured on both switches.
+Example:
+SW-A(config)# vtp domain Cisco
+SW-B(config)# vtp domain Cisco
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-B(config)# interface fa0/1
+SW-B(config-if)# switchport mode trunk
+SW-B(config-if)# switchport trunk encapsulation dot1q
+
+
+
+
+Step 3: Create VLANs on Both Switches
+Configure VLANs 2 and 3 on both switches:
+SW-A(config)# vlan 2
+SW-A(config)# vlan 3
+SW-B(config)# vlan 2
+SW-B(config)# vlan 3
+Verify using:
+show vlan brief
+
+
+
+
+Step 4: Verify Current Trunk Configuration
+Check whether any VLAN pruning is occurring (it should NOT, by default):
+SW-A# show interfaces trunk
+SW-B# show interfaces trunk
+Verify:
+VLANs 1–4094 are allowed
+VLANs 2 and 3 are forwarding
+No pruning enabled yet
+
+
+
+
+Step 5: Enable VTP Pruning Globally
+Enable VTP pruning on both switches:
+SW-A(config)# vtp pruning
+SW-B(config)# vtp pruning
+Verify again using:
+show interfaces trunk
+🔹 Note: Even after enabling VTP pruning globally, VLANs will NOT be pruned unless the switch detects that the remote side does not require that VLAN.
+
+
+
+
+Step 6: Configure Pruning on Specific Interface
+Now configure pruning sensitivity on Fa0/2 of SW-A:
+SW-A(config)# interface fa0/2
+SW-A(config-if)# switchport trunk pruning vlan 2
+This enables VLAN 2 pruning scanning, meaning VLAN 2 will be pruned only if no host exists on the corresponding VLAN on SW-B.
+Check trunk status again:
+SW-A# show interfaces trunk
+At this stage, VLANs will still not be pruned, because PC2 is still connected on SW-B Fa0/2.
+Now DISCONNECT PC2 from SW-B Fa0/2.
+After disconnecting, check trunk status again on SW-A:
+SW-A# show interfaces trunk
+Expected Result:
+VLAN 2 will now be pruned from the trunk link.
+Only VLAN 3 will remain forwarding.
+This demonstrates that pruning happens only when no active devices require that VLAN.
+
+
+
+
+
+Step 7: Reconnect PC2 and Verify Pruning Behavior
+Reconnect PC2 to SW-B Fa0/2.
+Then check trunk status again:
+SW-A# show interfaces trunk
+Expected Result:
+VLAN 2 will automatically be added back to the trunk.
+VTP detects an active host for VLAN 2 → VLAN is no longer pruned.
+
+
+
+
+Key Takeaways
+VTP Pruning reduces unnecessary broadcast traffic by removing unused VLANs from trunk links. Pruning works dynamically—VLANs are pruned only when no active devices exist for that VLAN downstream. The command vtp pruning enables pruning globally, but actual pruning depends on host activity.
+Use the command show interfaces trunk frequently to monitor VLAN pruning behavior.
+
+
+
+Final Note
+This lab demonstrates dynamic VLAN pruning, an essential concept for optimizing network performance in enterprise environments. Understanding VTP pruning helps prevent unnecessary broadcast traffic and improves trunk efficiency — a vital skill for CCNP-level switching.
