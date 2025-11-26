@@ -104,7 +104,7 @@ VTP is used only to synchronize VLAN database in this lab.
 
 
 
-Step 5: Create VLANs on SW-A
+Step 5: Create VLANs on SW-A and they will be transmitted to SW-B and SW-C automatically becuase of Server/Client model
 Create VLAN 2 and VLAN 3:
 SW-A(config)# vlan 2
 SW-A(config)# vlan 3
