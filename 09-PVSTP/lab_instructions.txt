@@ -110,7 +110,7 @@ SW-A(config)# vlan 2
 SW-A(config)# vlan 3
 Verify:
 SW-A# show vlan brief
-Because VTP server/client is not configured, you must manually create VLANs on other switches only if needed, but in this lab, we intentionally create VLANs only on SW-A.
+Because VTP server/client is configured, you do not need to manually create VLANs on other switches.
 
 
 
