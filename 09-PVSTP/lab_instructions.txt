@@ -38,8 +38,8 @@ Step 2: Verify Switches Are Zero Meter
 Before starting the switching configuration, verify that switches have no previous configs.
 Run these commands on all three switches:
 show running-config
-show vtp status
-show interfaces trunk
+SW#A,B,C show vtp status
+SW#A,B,C show interfaces trunk
 Checklist:
 No VLANs present
 Domain name is default (NULL)
