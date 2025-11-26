@@ -1,0 +1,150 @@
+CCNP Switching Lab 9: Configuring and Verifying PVSTP (Per-VLAN Spanning Tree Protocol)
+
+
+
+Lab Objective
+The objective of this lab is to understand how PVSTP works in a multi-switch environment.
+You will reset switches to factory state, configure static trunks, create VLANs, configure different spanning-tree priorities on each switch, and verify how PVSTP selects different root bridges and blocks different ports for VLAN 2 and VLAN 3.
+This lab helps you understand per-VLAN root bridge election and load-balancing using PVSTP.
+
+
+
+Devices Required
+3 Cisco Catalyst 3560 Switches (SW-A, SW-B, SW-C), Ethernet Cables, Console Cables (optional)
+
+
+Topology Connections
+SW-A Fa0/1 ↔ SW-B Fa0/1
+SW-A Fa0/2 ↔ SW-C Fa0/2
+SW-B Fa0/3 ↔ SW-C Fa0/3
+
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Cisco Packet Tracer.
+Drag and drop three 3560 switches.
+Name them: SW-A , SW-B, SW-C
+Make the following connections:
+SW-A Fa0/1 → SW-B Fa0/1
+SW-A Fa0/2 → SW-C Fa0/2
+SW-B Fa0/3 → SW-C Fa0/3
+Ensure all devices are powered on.
+
+
+
+Step 2: Verify Switches Are Zero Meter
+Before starting the switching configuration, verify that switches have no previous configs.
+Run these commands on all three switches:
+show running-config
+show vtp status
+show interfaces trunk
+Checklist:
+No VLANs present
+Domain name is default (NULL)
+Trunks not configured
+Spanning-tree in default state
+If NOT zero-meter → proceed to Step 3.
+
+
+
+Step 3: Reset All Switches (Make Them Zero Meter)
+Perform factory reset on each switch.
+On each switch (SW-A, SW-B, SW-C):
+write erase
+delete flash:vlan.dat
+reload
+After reload, all switches are fresh and ready.
+
+
+
+Step 4: Configure Switching Environment
+4.1 Configure Static Trunks on All Links
+You must configure trunks manually on all inter-switch links.
+On SW-A
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+
+SW-A(config)# interface fa0/2
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+
+On SW-B
+SW-B(config)# interface fa0/1
+SW-B(config-if)# switchport trunk encapsulation dot1q
+SW-B(config-if)# switchport mode trunk
+SW-B(config-if)# switchport nonegotiate
+
+SW-B(config)# interface fa0/3
+SW-B(config-if)# switchport trunk encapsulation dot1q
+SW-B(config-if)# switchport mode trunk
+SW-B(config-if)# switchport nonegotiate
+
+On SW-C
+SW-C(config)# interface fa0/2
+SW-C(config-if)# switchport trunk encapsulation dot1q
+SW-C(config-if)# switchport mode trunk
+SW-C(config-if)# switchport nonegotiate
+
+SW-C(config)# interface fa0/3
+SW-C(config-if)# switchport trunk encapsulation dot1q
+SW-C(config-if)# switchport mode trunk
+SW-C(config-if)# switchport nonegotiate
+
+4.2 Configure VTP Domain Name “cisco” on All Switches
+SW-A(config)# vtp domain cisco
+SW-B(config)# vtp domain cisco
+SW-C(config)# vtp domain cisco
+VTP is used only to synchronize VLAN database in this lab.
+
+
+
+Step 5: Create VLANs on SW-A
+Create VLAN 2 and VLAN 3:
+SW-A(config)# vlan 2
+SW-A(config)# vlan 3
+Verify:
+SW-A# show vlan brief
+Because VTP server/client is configured, you do not need to manually create VLANs on other switches.
+
+
+
+Step 6: Configure PVSTP Priority on SW-A
+Set SW-A to be Root Bridge for VLAN 2
+and Secondary for VLAN 3:
+SW-A(config)# spanning-tree vlan 2 priority 4096
+SW-A(config)# spanning-tree vlan 3 priority 8192
+
+
+
+Step 7: Configure PVSTP Priority on SW-B
+Set SW-B to be Root Bridge for VLAN 3
+and Secondary for VLAN 2:
+SW-B(config)# spanning-tree vlan 2 priority 8192
+SW-B(config)# spanning-tree vlan 3 priority 4096
+This will cause:
+VLAN 2 → SW-A becomes root
+VLAN 3 → SW-B becomes root
+This creates PVSTP load balancing, where different VLANs select different root bridges.
+
+
+
+Step 8: Verify PVSTP Behavior on SW-C
+Run the following commands:
+SW-C# show spanning-tree vlan 2
+SW-C# show spanning-tree vlan 3
+Expected Results
+ VLAN 2
+SW-A = Root Bridge
+SW-C’s Fa0/3 (toward SW-B) will be BLOCKING
+ VLAN 3
+SW-B = Root Bridge
+SW-C’s Fa0/2 (toward SW-A) will be BLOCKING
+This confirms PVSTP chooses different blocked ports per VLAN, enabling load balancing.
+
+
+Key Takeaways
+PVSTP runs a separate spanning-tree instance per VLAN.Each VLAN elects its own root bridge, allowing load balancing.Lower priority = higher chance of becoming root bridge.Blocking ports differ between VLANs to optimize traffic flow.show spanning-tree vlan X is the most important verification command.
