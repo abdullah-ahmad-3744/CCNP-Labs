@@ -1,0 +1,218 @@
+CCNP Switching Lab 10: STP Convergence — PVSTP → RSTP (Rapid-PVST) and PortFast
+
+
+Lab Objective
+The objective of this lab is to observe Spanning Tree Protocol (PVSTP) behavior and convergence delays, then enable Rapid PVST (RSTP) and PortFast to speed up convergence. You will:
+Build a three-switch topology with end hosts. Configure VLANs and PVSTP priorities to produce per-VLAN blocked ports. Observe STP convergence delays when a link fails. Configure PortFast and switch to Rapid-PVST and observe faster convergence.
+
+
+
+Devices Required
+3 × Cisco Catalyst 3560 Switches — SW-A, SW-B, SW-C
+2 × PCs (end hosts)
+Ethernet cables for inter-switch and host connections
+Console cables (optional)
+Topology
+SW-A Fa0/1 ↔ SW-B Fa0/1
+SW-A Fa0/2 ↔ SW-C Fa0/2
+SW-B Fa0/3 ↔ SW-C Fa0/3
+PC1 ↔ SW-A Fa0/10
+PC2 ↔ SW-C Fa0/10
+
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Packet Tracer (or use real equipment).
+Place three switches and two PCs; name them SW-A, SW-B, SW-C, PC1, PC2.
+Make the physical connections as shown in the topology above. Power on devices.
+
+
+
+Step 2: Prepare Switches
+Before making changes, ensure switches are in fresh state and trunks/VTP are configured.
+On each switch:
+SW-X# show running-config
+SW-X# show vtp status
+SW-X# show interfaces trunk
+
+Ensure:
+Switches are effectively zero-meter (or reset them if needed).
+VTP domain configured (if used).
+Static trunks will be configured on inter-switch links.
+If needed, to reset to factory:
+SW-X# write erase
+SW-X# delete flash:vlan.dat
+SW-X# reload
+
+
+
+Step 3: Configure VTP Domain and Static Trunks
+On each switch, configure VTP domain and trunk ports (apply to the interfaces used above).
+Example (run on SW-A then adapt for SW-B/SW-C):
+SW-A# configure terminal
+SW-A(config)# vtp domain cisco
+!
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+SW-A(config-if)# exit
+!
+SW-A(config)# interface fa0/2
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+SW-A(config-if)# exit
+!
+SW-A(config)# interface fa0/10
+SW-A(config-if)# switchport mode access
+SW-A(config-if)# switchport access vlan 2   !(if you want PC on VLAN 2, set accordingly)
+SW-A(config-if)# exit
+Repeat trunk configuration on SW-B and SW-C for the interfaces in the topology.
+
+
+
+Step 4: Create VLANs
+On SW-A (create VLANs 2 & 3):
+SW-A# configure terminal
+SW-A(config)# vlan 2
+SW-A(config-vlan)# exit
+SW-A(config)# vlan 3
+SW-A(config-vlan)# exit
+Verify VLANs propagated / present on other switches:
+SW-A# show vlan brief
+SW-B# show vlan brief
+SW-C# show vlan brief
+If VLANs are not present on SW-B/SW-C, create them there too (or enable VTP synchronization as appropriate).
+
+
+
+Step 5: Configure PVSTP Priorities
+Set per-VLAN priorities so different switches become root for different VLANs (load balancing).
+On SW-A:
+SW-A# configure terminal
+SW-A(config)# spanning-tree vlan 2 priority 4096
+SW-A(config)# spanning-tree vlan 3 priority 8192
+SW-A(config)# exit
+On SW-B:
+(Note: Step text originally referenced SW-A again; here we apply correct changes on SW-B)
+SW-B# configure terminal
+SW-B(config)# spanning-tree vlan 2 priority 8192
+SW-B(config)# spanning-tree vlan 3 priority 4096
+SW-B(config)# exit
+
+This makes:
+VLAN 2 root → SW-A (lower priority)
+VLAN 3 root → SW-B
+
+
+
+Step 6: Verify Blocked Ports on SW-C (PVSTP)
+Check which ports are blocking for each VLAN on SW-C:
+SW-C# show spanning-tree vlan 2
+SW-C# show spanning-tree vlan 3
+Expected:
+For VLAN 2: SW-C will block the port toward SW-B (Fa0/3).
+For VLAN 3: SW-C will block the port toward SW-A (Fa0/2).
+(Exact blocking ports depend on root election & path cost—confirm with the show spanning-tree vlan X output.)
+
+
+
+Step 7: Test Failure and Observe PVSTP Convergence
+From a host or switch CLI:
+PC1> ping 10.1.1.10 -t     ! (continuous ping from PC1 to PC2)
+While pinging, shut down one of the inter-switch links (e.g., on SW-A):
+SW-A# configure terminal
+SW-A(config)# interface fa0/2
+SW-A(config-if)# shutdown
+
+Observe:
+Pings will be interrupted for the STP convergence period (~30–50 seconds with classic PVST). Use show spanning-tree to watch port state transitions (listening → learning → forwarding).
+
+
+
+Step 8: Enable PortFast on Edge Ports and Configure RSTP (Rapid-PVST)
+Make sure edge ports (where PCs connect) are configured as PortFast.
+On SW-A (PC1 port):
+SW-A# configure terminal
+SW-A(config)# interface fa0/10
+SW-A(config-if)# spanning-tree portfast
+SW-A(config-if)# exit
+
+On SW-C (PC2 port):
+SW-C# configure terminal
+SW-C(config)# interface fa0/10
+SW-C(config-if)# spanning-tree portfast
+SW-C(config-if)# exit
+Enable Rapid-PVST mode on the switches (example on SW-A; repeat on SW-B and SW-C):
+SW-A# configure terminal
+SW-A(config)# spanning-tree mode rapid-pvst
+SW-A(config)# exit
+
+Verify PortFast and STP mode:
+SW-A# show spanning-tree
+SW-A# show spanning-tree summary
+SW-C# show spanning-tree
+SW-C# show spanning-tree summary
+You should see Spanning tree mode: rapid-pvst and PortFast enabled on the edge ports.
+
+
+
+Step 9: Verify STP Mode
+Confirm the switch is running Rapid-PVST:
+SW-A# show spanning-tree summary
+Look for Spanning tree enabled protocol showing Rapid-PVST.
+
+
+
+Step 10: Test Convergence with RSTP
+With continuous ping running (from Step 7), shut one non-blocking link (choose an active, non-blocked inter-switch port).
+Example — shut SW-A → SW-C again (if previously brought down, bring up first):
+SW-A# configure terminal
+SW-A(config)# interface fa0/2
+SW-A(config-if)# shutdown
+
+Watch convergence:
+SW-A# show spanning-tree
+Observe:
+With Rapid-PVST and PortFast enabled, recovery time should be significantly lower than PVST (often sub-second to a few seconds, depending on topology and link types).
+Check ping continuity — interruptions should be much shorter.
+
+
+
+Step 11: Restore Links
+Bring the link back up (note: original instructions had fa0/12 which appears to be a typo; the correct interface to restore is the one you shut—fa0/2 in the example above):
+SW-A# configure terminal
+SW-A(config)# interface fa0/2
+SW-A(config-if)# no shutdown
+SW-A(config-if)# exit
+
+Verify STP re-convergence:
+SW-A# show spanning-tree
+SW-B# show spanning-tree
+SW-C# show spanning-tree
+
+Confirm blocked/forwarding ports and ensure traffic flows again.
+
+
+
+Key Takeaways
+PVSTP (Per-VLAN STP) runs an STP instance per VLAN, allowing different roots per VLAN but converges relatively slowly (20–50s). Rapid-PVST (RSTP) reduces convergence times dramatically—useful for production networks. 
+PortFast should be enabled on edge ports (host ports) to avoid unnecessary STP delays and to allow immediate forwarding on host connect.
+When testing failover, expect long interruption with classic PVST and much shorter interruption with Rapid-PVST + PortFast.
+
+
+Commands Summary
+Create VLANs: vlan 2, vlan 3
+Set PVST priority: spanning-tree vlan <vlan> priority <value>
+Enable PortFast: spanning-tree portfast (on interface)
+Enable RSTP: spanning-tree mode rapid-pvst
+
+Show STP: show spanning-tree, show spanning-tree vlan <vlan>, show spanning-tree summary
+Shutdown/no shutdown interfaces: shutdown / no shutdown (in interface mode)
+
+
+
+Final Note
+This lab demonstrates the practical differences between classic PVSTP and Rapid-PVST in terms of convergence and host experience. PortFast and RSTP together provide fast recovery and better UX for end hosts. Use these tools carefully—PortFast must only be applied to genuine edge ports to avoid accidental loops.
