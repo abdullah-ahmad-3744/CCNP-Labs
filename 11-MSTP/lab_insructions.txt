@@ -16,14 +16,17 @@ Topology
 SW-A Fa0/1 ↔ SW-B Fa0/1
 SW-A Fa0/2 ↔ SW-C Fa0/2
 SW-B Fa0/3 ↔ SW-C Fa0/3
+SW-A Fa0/10 <=> PC-1
+SW-B Fa0/10 <=> PC-2
 
 
 
 
 Step-by-Step Instructions
 Step 1: Create the Lab Topology
-Open Packet Tracer or rack up the physical switches.
+Open Packet Tracer or rack up the physical switches. 
 Name the switches SW-A, SW-B, SW-C.
+Take 2 PC's
 Make the inter-switch and host connections as shown in Topology. Power on devices.
 
 
