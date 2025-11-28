@@ -1,0 +1,238 @@
+CCNP Switching Lab 11: MSTP (Multiple Spanning Tree Protocol) — Design, Configure & Verify
+
+
+
+Lab Objective
+The objective of this lab is to design, configure, and verify MSTP on a three-switch topology.
+You will:
+Build the three-switch topology and prepare switches (zero-meter). Configure static trunks and VLANs. Enable Rapid-PVST (RSTP) and PortFast for comparison. Enable MST mode, create an MST region (name & revision), map VLANs to instances, and verify instance-based topology and load balancing. Observe BPDU/log behavior (lab only) and verify blocked ports per MST instance.
+
+
+
+Devices Required
+3 × Cisco Catalyst 3560 Switches — SW-A, SW-B, SW-C
+Ethernet cables for inter-switch and host connections
+Topology
+SW-A Fa0/1 ↔ SW-B Fa0/1
+SW-A Fa0/2 ↔ SW-C Fa0/2
+SW-B Fa0/3 ↔ SW-C Fa0/3
+
+
+
+
+Step-by-Step Instructions
+Step 1: Create the Lab Topology
+Open Packet Tracer or rack up the physical switches.
+Name the switches SW-A, SW-B, SW-C.
+Make the inter-switch and host connections as shown in Topology. Power on devices.
+
+
+
+
+Step 2: Prepare Switches (zero-meter check)
+On each switch run:
+SW-X# show running-config
+SW-X# show vtp status
+SW-X# show interfaces trunk
+
+If switches are not clean, reset them:
+SW-X# write erase
+SW-X# delete flash:vlan.dat
+SW-X# reload
+Ensure switches are effectively factory default before proceeding.
+
+
+
+
+Step 3: Configure VTP Domain & Static Trunks
+On each switch configure the common VTP domain and trunk ports used in topology.
+Example — SW-A
+SW-A# configure terminal
+SW-A(config)# vtp domain cisco
+!
+SW-A(config)# interface fa0/1
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+SW-A(config-if)# exit
+!
+SW-A(config)# interface fa0/2
+SW-A(config-if)# switchport trunk encapsulation dot1q
+SW-A(config-if)# switchport mode trunk
+SW-A(config-if)# switchport nonegotiate
+SW-A(config-if)# exit
+!
+SW-A(config)# interface fa0/10
+SW-A(config-if)# switchport mode access
+SW-A(config-if)# switchport access vlan 2    
+SW-A(config-if)# exit
+Repeat equivalent trunk configuration on SW-B and SW-C for interfaces Fa0/1, Fa0/2, Fa0/3.
+
+
+
+
+Step 4: Create VLANs (2 → 11)
+On SW-A create VLANs:
+SW-A# configure terminal
+SW-A(config)# vlan 2
+SW-A(config-vlan)# exit
+SW-A(config)# vlan 3
+SW-A(config-vlan)# exit
+...
+SW-A(config)# vlan 11
+SW-A(config-vlan)# exit
+Verify VLANs on all switches:
+SW-A# show vlan brief
+SW-B# show vlan brief
+SW-C# show vlan brief
+If VLANs are not present on SW-B / SW-C, create them there or enable VTP sync as required.
+
+
+
+
+
+Step 5: Configure Rapid-PVST & PortFast (pre-MST comparison)
+Enable PortFast on edge (host) ports and set STP to Rapid-PVST to observe fast convergence before switching to MST.
+On SW-A (PC1 port fa0/10):
+SW-A# configure terminal
+SW-A(config)# interface fa0/10
+SW-A(config-if)# spanning-tree portfast
+SW-A(config-if)# exit
+
+On SW-C (PC2 port fa0/10):
+SW-C# configure terminal
+SW-C(config)# interface fa0/10
+SW-C(config-if)# spanning-tree portfast
+SW-C(config-if)# exit
+
+Enable Rapid-PVST on all switches:
+SW-A# configure terminal
+SW-A(config)# spanning-tree mode rapid-pvst
+SW-A(config)# exit
+SW-B# configure terminal
+SW-B(config)# spanning-tree mode rapid-pvst
+SW-B(config)# exit
+SW-C# configure terminal
+SW-C(config)# spanning-tree mode rapid-pvst
+SW-C(config)# exit
+
+Verify:
+SW-A# show spanning-tree
+SW-A# show spanning-tree summary
+Observe faster convergence vs legacy PVST.
+
+
+
+
+Step 6: Observe BPDU Logging / Debugging
+Caution: debug is CPU-intensive  use only in lab.
+On a non-root switch to watch BPDU activity:
+SW-C(config)# logging console
+SW-C(config)# logging on
+SW-C(config)# debug spanning-tree bpdu receive
+
+To stop:
+SW-C# undebug all
+SW-C(config)# no logging console
+SW-C(config)# no logging on
+
+
+
+
+Step 7: Check MSTP Capability / Current STP Mode
+SW-A# show spanning-tree mst configuration
+This shows current STP mode and whether MST is configured. Initially it will show STP mode = rapid-pvst (or whatever you set), and no MST region configured yet.
+
+
+
+
+Step 8: Enable MSTP Mode on Switches
+Switch STP mode to MST (do on all switches):
+SW-A# configure terminal
+SW-A(config)# spanning-tree mode mst
+SW-A(config)# exit
+SW-B# configure terminal
+SW-B(config)# spanning-tree mode mst
+SW-B(config)# exit
+SW-C# configure terminal
+SW-C(config)# spanning-tree mode mst
+SW-C(config)# exit
+
+Verify:
+SW-A# show spanning-tree mst configuration
+After switching mode you may observe BPDU differences; STP may reconverge.
+
+
+
+
+Step 9: Configure MST Region (Name & Revision) and Map VLANs to Instances
+On each switch, configure the same MST region name and revision and VLAN→instance mapping.
+On SW-A (and repeat exactly on SW-B & SW-C):
+SW-A# configure terminal
+SW-A(config)# spanning-tree mst configuration
+SW-A(config-mst)# name cisco
+SW-A(config-mst)# revision 5
+SW-A(config-mst)# instance 1 vlan 1-5
+SW-A(config-mst)# instance 2 vlan 7-11
+SW-A(config-mst)# exit
+
+Save and verify:
+SW-A# show running-config | section spanning-tree mst
+SW-A# show spanning-tree mst configuration
+Important: Region name and revision must match on all switches for them to be in the same MST region.
+
+
+
+Step 10: Verify MST Instances & Topology
+Check instance status and root for each instance:
+SW-A# show spanning-tree mst
+SW-A# show spanning-tree mst 1
+SW-A# show spanning-tree mst 2
+
+On SW-C check which ports are blocked for each instance:
+SW-C# show spanning-tree mst 1
+SW-C# show spanning-tree mst 2
+You should see different blocked ports per instance (enables load balancing across physical links).
+
+
+
+Step 11: Configure Instance Priorities for Load Balancing
+Adjust instance priorities to change root selection per instance.
+On SW-A:
+SW-A# configure terminal
+SW-A(config)# spanning-tree mst 1 priority 4096
+SW-A(config)# spanning-tree mst 2 priority 8192
+SW-A(config)# exit
+
+On SW-B (opposite values):
+SW-B# configure terminal
+SW-B(config)# spanning-tree mst 1 priority 8192
+SW-B(config)# spanning-tree mst 2 priority 4096
+SW-B(config)# exit
+
+Re-verify instance roots and blocked ports:
+SW-A# show spanning-tree mst
+SW-B# show spanning-tree mst
+SW-C# show spanning-tree mst
+
+If changes don’t take effect immediately, save configs and reload switches (lab environment compatibility).
+
+
+Key Takeaways
+MSTP groups VLANs into instances; each instance runs a single STP topology — less CPU/memory than per-VLAN STP while still enabling load balancing. MST region name & revision must match on all switches to form the same MST domain. Map VLANs into instances with spanning-tree mst configuration → instance X vlan Y-Z. Use instance priorities (spanning-tree mst <inst> priority <value>) to control root selection per instance for load balancing. Use PortFast on edge ports and RSTP behavior within MST region to optimize convergence. Debugging BPDUs is helpful in lab only — avoid debug on production devices.
+
+
+
+Useful Commands Summary
+show spanning-tree mst configuration
+spanning-tree mode mst
+spanning-tree mst configuration → name, revision, instance <n> vlan <list>
+show spanning-tree mst / show spanning-tree mst <instance>
+spanning-tree mst <instance> priority <value>
+spanning-tree portfast (on edge interfaces)
+show interfaces trunk / show vlan brief
+
+
+
+Final Note
+This MSTP lab demonstrates how to map VLANs to MST instances, perform instance-based load balancing and verify per-instance blocked ports. Always ensure MST region settings (name & revision) are identical on all switches in the region — mismatch causes separate regions and unexpected topology behavior.
